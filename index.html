@@ -1,546 +1,633 @@
 <!DOCTYPE html>
+<!--
+  This HTML file contains a single-file infographic summarizing a student collaborative research report.
+  It includes all CSS and JavaScript directly within the file, without external links.
+  Chart visualizations are implemented using Chart.js, and other diagrams use pure HTML/CSS.
+-->
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>생성형 AI 상품화에 대한 고등학생의 시선</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Custom CSS for color palette and general styling */
-        :root {
-            --primary-blue: #2A62B6;
-            --secondary-teal: #4ECDC4;
-            --accent-grey: #A9A9A9;
-            --supporting-light-blue: #E0F2FE;
-            --dark-text: #263238;
-            --light-background-card: #FFFFFF;
-            --light-background-main: #F4F7F9;
+        /* Custom CSS */
+        .wordcloud {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 3px solid #4ECDC4;
         }
-
         body {
-            font-family: 'Pretendard', 'Noto Sans KR', sans-serif; /* Prioritize Pretendard, fall back to Noto Sans KR or system sans-serif */
-            background-color: var(--light-background-main);
-            color: var(--dark-text);
+            font-family: 'Inter', sans-serif; /* Fallback to Inter if Pretendard not loaded */
+            background-color: #F4F7F9; /* Light Background */
+            color: #263238; /* Dark Text */
             line-height: 1.6;
+            
         }
-
-        h1, h2, h3, h4 {
-            color: var(--primary-blue);
-            font-weight: 700;
+        .interview{
+            width: 400px;
+            height: 400px;
+            border-radius: 100%;
+            border:3px solid #4ECDC4 ;
+            object-fit: cover;
         }
-
         .container {
             max-width: 1200px;
         }
-
         .card {
-            background-color: var(--light-background-card);
+            background-color: #FFFFFF; /* Light Background for cards */
             border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
         }
-
         .chart-container {
             position: relative;
-            /* Default height for charts, responsive adjustments will be made by Tailwind classes */
-            height: 288px; /* h-72 */
+            width: 100%;
+            height: 350px; /* Default height for charts */
+            max-width: 500px; /* Max width for charts */
         }
-
-        /* Specific styles for the research process flow */
-        .flow-step {
-            background-color: var(--supporting-light-blue);
-            padding: 1rem;
-            border-radius: 0.5rem; /* rounded-lg */
-            text-align: center;
-            font-weight: 600;
-            color: var(--primary-blue);
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px; /* Adjust height for medium screens */
+            }
+        }
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 450px; /* Adjust height for large screens */
+            }
+        }
+        /* Custom styles for the process flow */
+        .process-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
             position: relative;
         }
-
-        .flow-arrow {
+        .process-step-icon {
+            background-color: #2A62B6; /* Primary Blue */
+            color: white;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0.5rem 0;
+            font-weight: bold;
+            flex-shrink: 0;
+            z-index: 1;
         }
-
-        .flow-arrow::after {
-            content: '↓';
-            font-size: 1.5rem;
-            color: var(--accent-grey);
+        .process-step-content {
+            background-color: #E0F2FE; /* Supporting Light Blue */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-left: -0.5rem; /* Overlap with icon slightly */
+            flex-grow: 1;
+            position: relative;
+            z-index: 0;
         }
-
-        /* Responsive adjustments for flow steps */
-        @media (min-width: 768px) {
-            .flow-step {
-                padding: 1.5rem;
-            }
-            .flow-arrow {
-                margin: 0 0.5rem;
-            }
-            .flow-arrow::after {
-                content: '→';
-            }
-            .flow-container-md {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
+        .process-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 1.2rem;
+            top: 2.5rem; /* Adjust based on icon height */
+            bottom: -0.5rem; /* Extend line downwards */
+            width: 2px;
+            background-color: #A9A9A9; /* Accent Grey */
+            z-index: 0;
         }
-
-        /* Style for interview keywords */
-        .keyword-chip {
-            background-color: var(--secondary-teal);
+        .process-step:last-child::after {
+            display: none; /* No line after the last step */
+        }
+        /* Style for interview cards */
+        .interview-card {
+            border-left: 4px solid #4ECDC4; /* Secondary Teal */
+        }
+        /* Style for the AI chat button */
+        .ai-chat-button {
+            background-color: #4ECDC4; /* Secondary Teal */
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px; /* rounded-full */
-            font-weight: 500;
-            font-size: 0.9rem;
-            margin: 0.25rem;
-            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .ai-chat-button:hover {
+            background-color: #38a39d; /* Darker Teal */
+        }
+        .ai-chat-button:disabled {
+            background-color: #A9A9A9; /* Accent Grey */
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body class="bg-light-background-main text-dark-text">
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header class="text-center py-8 bg-white card mb-8">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight">생성형 AI 상품화에 대한 고등학생의 시선</h1>
-            <h2 class="text-xl sm:text-2xl text-accent-grey mb-4">디지털 시대, 새로운 가치 창출</h2>
+<body class="p-4 md:p-8">
+    
+
+    <div class="container mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#2A62B6] leading-tight mb-4">
+                생성형 AI로 상품화, 넌 어떻게 생각해?
+            </h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-[#263238] mb-6">
+                디지털 시대, 새로운 가치 창출: 생성형 AI 상품화에 대한 고등학생의 시선
+            </h2>
             <div class="text-lg text-gray-600">
-                <p class="mb-1">1학년 2반 1조</p>
+                <p>1학년 2반 1조 공동 조사 보고서</p>
                 <p>작성일: 2025년 5월 26일</p>
-                <p class="mt-2">조원: 조성찬, 이현민, 이연수, 연정훈, 민서연</p>
+                <p>조원: 조성찬(1215), 이현민(1212), 이연수(1209), 연정훈(1205), 민서연(1203)</p>
             </div>
         </header>
 
         <main>
-            <section id="motivation-purpose" class="mb-12 p-6 card">
-                <h3 class="text-2xl sm:text-3xl font-bold mb-4">1. 조사 동기 및 목적</h3>
+            <section class="card p-6 md:p-8 mb-8">
+                <h3 class="text-2xl md:text-3xl font-bold text-[#2A62B6] mb-4">1. 조사 동기와 목적</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-2">조사 동기</h4>
-                        <p class="text-base sm:text-lg">
-                            생성형 AI 기술이 빠르게 발전하며 다양한 분야의 상품 및 서비스에 적용되고 있다. 이에 따라 생성형 AI를 활용한 상품화에 대한 일반 대중의 인식을 이해하는 것이 중요해졌다. 사람들의 의견, 기대치, 그리고 잠재적 우려사항을 폭넓게 파악하기 위해 본 조사를 진행했다.
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">조사 동기</h4>
+                        <p class="text-gray-700">
+                            생성형 AI 기술이 빠르게 발전하며 다양한 분야의 상품 및 서비스에 적용되고 있다. 이에 따라 생성형 AI를 활용한 상품화에 대한 일반 대중의 인식을 이해하는 것이 중요해졌다. 사람들의 의견, 기대치, 그리고 잠재적 우려사항을 폭넓게 파악하기 위해 본 조사가 진행되었다.
                         </p>
                     </div>
                     <div>
-                        <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-2">조사 목적</h4>
-                        <p class="text-base sm:text-lg">
-                            본 조사는 생성형 AI 기술의 상품화 가능성과 사회적 수용성에 대한 인식 실태를 다각적으로 분석하는 데 목적을 두었다. 이를 통해 생성형 AI가 실제로 적용될 수 있는 산업 및 서비스 분야를 구체화하고, 이용자 관점에서의 기대와 우려를 균형 있게 파악하고자 했다. 또한 기술 발전이 창의성, 직업 윤리 등 인간 고유의 가치와 어떻게 조화를 이룰 수 있는지를 함께 고찰했다. 이러한 분석 결과는 향후 생성형 AI 관련 기술 개발 방향 수립과 시장 진입 전략, 정책적 지원 방안을 마련하는 데 실질적인 기초 자료로 활용될 수 있다.
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">조사 목적</h4>
+                        <p class="text-gray-700">
+                            본 조사는 생성형 AI 기술의 상품화 가능성과 사회적 수용성에 대한 인식 실태를 다각적으로 분석하는 데 목적이 있다. 이를 통해 생성형 AI가 실제로 적용될 수 있는 산업 및 서비스 분야를 구체화하고, 이용자 관점에서의 기대와 우려를 균형 있게 파악하고자 한다. 또한 기술 발전이 창의성, 직업 윤리 등 인간 고유의 가치와 어떻게 조화를 이룰 수 있는지를 함께 고찰한다. 이러한 분석 결과는 향후 생성형 AI 관련 기술 개발 방향 수립과 시장 진입 전략, 정책적 지원 방안을 마련하는 데 실질적인 기초 자료로 활용될 수 있다.
                         </p>
                     </div>
                 </div>
             </section>
 
-            <section id="research-plan" class="mb-12 p-6 card">
-                <h3 class="text-2xl sm:text-3xl font-bold mb-4">2. 조사 계획</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-supporting-light-blue p-4 rounded-lg text-center">
-                        <h4 class="font-semibold text-primary-blue text-lg mb-1">조사 기간</h4>
-                        <p class="text-base">2025년 5월 19일 ~ 5월 21일</p>
-                    </div>
-                    <div class="bg-supporting-light-blue p-4 rounded-lg text-center">
-                        <h4 class="font-semibold text-primary-blue text-lg mb-1">조사 대상</h4>
-                        <p class="text-base">미림마이스터고 1학년 2반 학생 17명</p>
-                    </div>
-                    <div class="bg-supporting-light-blue p-4 rounded-lg text-center col-span-1 md:col-span-2">
-                        <h4 class="font-semibold text-primary-blue text-lg mb-1">조사 방법</h4>
-                        <p class="text-base">설문조사 (3문항) 및 심층 인터뷰 (2명) 병행. 데이터는 빈도/기술 통계 및 질적 분석을 실시했다.</p>
-                    </div>
-                </div>
-
-                <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-4 text-center">조사 과정</h4>
-                <div class="flow-container-md flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
-                    <div class="flow-step w-full md:w-auto flex-1">
-                        1차시_활동지_계획하기
-                    </div>
-                    <div class="flow-arrow hidden md:block"></div>
-                    <div class="flow-arrow block md:hidden"></div>
-                    <div class="flow-step w-full md:w-auto flex-1">
-                        설문조사 제작
-                    </div>
-                    <div class="flow-arrow hidden md:block"></div>
-                    <div class="flow-arrow block md:hidden"></div>
-                    <div class="flow-step w-full md:w-auto flex-1">
-                        활동지_생성형 AI 활용 내용조직하기 및 내용 표현하기
-                    </div>
-                    <div class="flow-arrow hidden md:block"></div>
-                    <div class="flow-arrow block md:hidden"></div>
-                    <div class="flow-step w-full md:w-auto flex-1">
-                        제출본_공동 조사 보고서 1차 완성본 제작
-                    </div>
-                    <div class="flow-arrow hidden md:block"></div>
-                    <div class="flow-arrow block md:hidden"></div>
-                    <div class="flow-step w-full md:w-auto flex-1">
-                        프롬프트를 활용하여 공동조사 보고서 수정
-                    </div>
-                </div>
-            </section>
-
-            <section id="research-results" class="mb-12 p-6 card">
-                <h3 class="text-2xl sm:text-3xl font-bold mb-6">3. 조사 결과</h3>
-
-                <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-4">가. 설문조사 결과</h4>
-
-                <div class="mb-8">
-                    <h5 class="text-lg sm:text-xl font-medium mb-3">문항 1. 생성형 AI(예: 챗GPT, 미드저니 등)를 사용해본 경험이 있나요?</h5>
-                    <div class="chart-container w-full max-w-lg mx-auto h-72 md:h-80 lg:h-96">
-                        <canvas id="chart1"></canvas>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-2 text-center">
-                        응답자 17명 중 14명(82.4%)이 생성형 AI를 ‘매우 그렇다’고 응답했다. 미림마이스터고 1학년 학생들 대다수가 생성형 AI 사용 경험이 매우 높은 것으로 나타났다. 긍정 응답(‘그렇다’, ‘매우 그렇다’)이 전체의 88.3%(15명)를 차지했다.
-                    </p>
-                </div>
-
-                <div class="mb-8">
-                    <h5 class="text-lg sm:text-xl font-medium mb-3">문항 2. 생성형 AI를 활용하여 자신만의 상품을 직접 만들고 이를 실제로 판매하는 것에 대해 얼마나 관심이 있나요?</h5>
-                    <div class="chart-container w-full max-w-lg mx-auto h-72 md:h-80 lg:h-96">
-                        <canvas id="chart2"></canvas>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-2 text-center">
-                        ‘보통이다’와 ‘관심 있다’ 응답이 각각 5명(29.4%)으로 동일하게 나타났다. 부정적 응답(‘전혀 관심 없다’, ‘관심 없다’)이 총 5명(29.4%)을 차지했다. 학생들이 생성형 AI 상품화에 대한 흥미가 특정 방향으로 크게 쏠리지 않고 다양한 스펙트럼을 가지고 있음을 보여준다.
-                    </p>
-                </div>
-
-                <div class="mb-8">
-                    <h5 class="text-lg sm:text-xl font-medium mb-3">문항 3. 생성형 AI 기술이 미래의 상품 개발 및 상품화에 얼마나 큰 영향을 미칠 것이라고 생각하시나요?</h5>
-                    <div class="chart-container w-full max-w-lg mx-auto h-72 md:h-80 lg:h-96">
-                        <canvas id="chart3"></canvas>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-2 text-center">
-                        ‘영향을 미칠 것이다’가 9명(52.9%), ‘매우 큰 영향을 미칠 것이다’가 7명(41.2%)으로 나타났다. 대다수의 학생들이 생성형 AI 기술이 미래 상품 개발 및 상품화에 매우 큰 영향을 미칠 것이라고 강력히 인지하고 있다. 전체의 94.1% 이상이 4점(영향을 미칠 것이다) 이상으로 응답했다.
-                    </p>
-                </div>
-
-                <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-4 mt-8">나. 인터뷰 결과</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="p-4 bg-supporting-light-blue rounded-lg">
-                        <h5 class="text-lg font-semibold text-primary-blue mb-2">이서영 학생 인터뷰</h5>
-                        <p class="text-sm mb-2">
-                            이서영 학생은 AI 이미지 생성 기술이 가져올 산업적 변화에 관심을 보였다. 특히 양산형 콘텐츠가 필요한 분야에서는 AI가 실질적인 수요를 채울 수 있다고 인정했다. 하지만 예술이나 창작의 영역에서는 AI가 인간만큼 감정을 담을 수 없다고 말했다. AI의 작업은 주어진 명령어와 데이터에 기반하므로, 삶의 이야기나 맥락이 담기 어렵다고 보았다. 따라서 AI 이미지에는 예술가의 진정성이나 개성이 빠져 있다고 말했다. AI는 어디까지나 도구이지, 창작의 주체가 될 수는 없다는 입장을 가지고 있었다.
-                        </p>
-                        <a href="https://clovanote.naver.com/s/bL2XdDWMYfnrXczyhnBG7gS?t=3" target="_blank" class="text-sm text-secondary-teal hover:underline">인터뷰 영상 링크</a>
-                    </div>
-                    <div class="p-4 bg-supporting-light-blue rounded-lg">
-                        <h5 class="text-lg font-semibold text-primary-blue mb-2">이담현 학생 인터뷰</h5>
-                        <p class="text-sm mb-2">
-                            이담현 학생은 AI 이미지 생성 기술이 빠르고 실용적이라는 점에서 긍정적인 평가를 했다. 특히 기업 마케팅 분야에서 AI를 활용하면 시간과 비용을 아낄 수 있어 유용하다고 보았다. 하지만 디자이너의 노력과 고유한 감성을 간과하는 점은 우려스럽다고 말했다. AI가 디자이너의 자리를 대체하는 것이 아니라, 보조 도구로 사용되었으면 한다고 강조했다. 또한 AI에 대한 과도한 환상은 경계할 필요가 있다고 보았다. 디자이너의 고민과 맥락이 없는 AI 작업물은 결국 ‘겉모습만 좋은 이미지’일 수 있다고 말했다.
-                        </p>
-                        <a href="https://clovanote.naver.com/w/GLkGfFUBNeLycaB4MHNw/note-detail/5d3ffbee-a288-4791-b841-1cea33ce8dc7n" target="_blank" class="text-sm text-secondary-teal hover:underline">인터뷰 영상 링크</a>
-                    </div>
-                </div>
-
-                <h5 class="text-lg sm:text-xl font-medium mb-3 text-center">인터뷰 주요 키워드</h5>
-                <div class="flex flex-wrap justify-center gap-2 p-4 bg-supporting-light-blue rounded-lg">
-                    <span class="keyword-chip">양산형 콘텐츠</span>
-                    <span class="keyword-chip">창의성/예술성</span>
-                    <span class="keyword-chip">AI의 한계</span>
-                    <span class="keyword-chip">이미지 생성</span>
-                    <span class="keyword-chip">디자이너 영향</span>
-                    <span class="keyword-chip">속도/효율성</span>
-                    <span class="keyword-chip">독창성 부족</span>
-                </div>
-            </section>
-
-            <section id="conclusion-suggestions" class="mb-12 p-6 card">
-                <h3 class="text-2xl sm:text-3xl font-bold mb-6">4. 결론 및 제언</h3>
+            <section class="card p-6 md:p-8 mb-8">
+                <h3 class="text-2xl md:text-3xl font-bold text-[#2A62B6] mb-4">2. 조사 계획</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-2">결론</h4>
-                        <p class="text-base sm:text-lg">
-                            이번 조사를 통해 대부분의 학생이 생성형 AI를 일상적으로 활용하고 있으며, 기술의 빠른 속도와 효율성에는 긍정적인 반응을 보이고 있다는 점을 확인할 수 있었다. 하지만 AI의 창의성 부족과 감정 표현의 한계에 대해서는 분명한 우려도 존재했다. 예술, 디자인처럼 인간의 감정이 중요한 분야에서는 AI 활용에 부정적인 시선이 많았고, 반대로 반복적이거나 상업적인 분야에서는 기술이 잘 활용되면 도움이 된다는 인식이 있었다. 전체적으로 학생들은 AI를 지나치게 낙관하지도, 비판하지도 않으며, 균형 잡힌 태도와 현실적인 관점을 가지고 있다는 점을 알 수 있었다.
-                        </p>
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">조사 개요</h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-2">
+                            <li><strong>조사 기간:</strong> 2025년 5월 19일 ~ 2025년 5월 21일</li>
+                            <li><strong>조사 대상:</strong> 미림마이스터고등학교 1학년 2반 학생 17명</li>
+                            <li><strong>조사 방법:</strong> 설문조사(3개 문항)와 심층 인터뷰(2명) 병행</li>
+                        </ul>
                     </div>
                     <div>
-                        <h4 class="text-xl sm:text-2xl font-semibold text-secondary-teal mb-2">제언</h4>
-                        <p class="text-base sm:text-lg">
-                            AI가 아무리 똑똑해져도 사람이 해야 할 역할은 분명히 있다고 생각한다. 앞으로는 사람들과 AI가 각자 잘하는 것을 나눠서, 같이 써나가는 방향이 중요할 것이다. 또 기술을 제대로 이해하고 현명하게 쓰려면, 단순한 사용법이 아니라, 생각할 수 있는 기회가 더 많아져야 한다. 우리는 아직 배우는 입장이기에 기술을 그냥 받아들이기보다는 한 번 더 질문하고, 고민해보는 태도가 필요하다고 느꼈다.
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">조사 과정</h4>
+                        <div class="space-y-4 relative pl-4">
+                            <div class="process-step">
+                                <div class="process-step-icon">1</div>
+                                <div class="process-step-content">
+                                    <p class="font-medium text-[#263238]">1차시 활동지 계획하기</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="process-step-icon">2</div>
+                                <div class="process-step-content">
+                                    <p class="font-medium text-[#263238]">설문조사 제작</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="process-step-icon">3</div>
+                                <div class="process-step-content">
+                                    <p class="font-medium text-[#263238]">활동지 생성형 AI 활용 내용 조직 및 표현</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="process-step-icon">4</div>
+                                <div class="process-step-content">
+                                    <p class="font-medium text-[#263238]">제출본 공동 조사 보고서 1차 완성본 제작</p>
+                                </div>
+                            </div>
+                            <div class="process-step">
+                                <div class="process-step-icon">5</div>
+                                <div class="process-step-content">
+                                    <p class="font-medium text-[#263238]">프롬프트를 활용하여 공동조사 보고서 수정</p>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                </div>
+            </section>
+
+            <section class="card p-6 md:p-8 mb-8">
+                <h3 class="text-2xl md:text-3xl font-bold text-[#2A62B6] mb-4">3. 조사 결과</h3>
+                <h4 class="text-xl font-semibold text-[#263238] mb-4">가. 설문조사 결과 (N=17)</h4>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="mb-6">
+                        <h5 class="text-lg font-medium text-[#263238] mb-3">문항 1. 생성형 AI(예: 챗GPT, 미드저니 등)를 사용해본 경험이 있나요?</h5>
+                        <p class="text-gray-700 mb-4">
+                            전체의 82.4% 이상이 '매우 그렇다'로 응답하였고 '그렇지 않다' 이하로 응답한 사람은 없었다. 이는 조사 대상 학생 모두가 생성형 AI를 사용한 경험이 있으며 자주 사용한다는 것을 의미한다.
                         </p>
+                        <div class="chart-container mx-auto">
+                            <canvas id="chartAIUsage"></canvas>
+                        </div>
+                        </div>
+
+                    <div class="mb-6">
+                        <h5 class="text-lg font-medium text-[#263238] mb-3">문항 2. 생성형 AI를 활용하여 자신만의 상품을 직접 만들고 이를 실제로 판매하는 것에 대해 얼마나 관심이 있나요?</h5>
+                        <p class="text-gray-700 mb-4">
+                            '보통이다'를 기준으로 상하위 응답률이 유사한 분포를 보였다. 이는 반 친구들이 생성형 AI를 활용한 상품 제작 및 판매에 대해 다양한 입장을 가지고 있으며, 특별히 한쪽으로 치우치지 않고 고르게 분포되어 있음을 의미한다.
+                        </p>
+                        <div class="chart-container mx-auto">
+                            <canvas id="chartAIProductInterest"></canvas>
+                        </div>
+                        </div>
+
+                    <div class="lg:col-span-2 mb-6">
+                        <h5 class="text-lg font-medium text-[#263238] mb-3">문항 3. 생성형 AI 기술이 미래의 상품 개발 및 상품화에 얼마나 큰 영향을 미칠 것이라고 생각하시나요?</h5>
+                        <p class="text-gray-700 mb-4">
+                            전체의 94.1% 이상이 '영향을 미칠 것이다' 이상으로 응답하였다. 이는 생성형 AI 기술이 미래의 상품 개발 및 상품화에 있어서 '핵심 도구'가 될 것이라고 본다는 것이다. 또한 단순한 유행이 아니라 장기적으로 산업에 구조적인 영향을 줄 것이라는 인식이 퍼져 있음을 의미한다.
+                        </p>
+                        <div class="chart-container mx-auto">
+                            <canvas id="chartAIImpact"></canvas>
+                        </div>
+                        </div>
+                </div>
+            </section>
+
+            <section class="card p-6 md:p-8 mb-8">
+                <h4 class="text-xl font-semibold text-[#263238] mb-4">나. 인터뷰 결과</h4>
+                <p class="text-gray-700 mb-6">심층 인터뷰를 통해 생성형 AI 상품화에 대한 학생들의 구체적인 의견과 심층적인 관점을 파악하였다.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="interview-card p-5 rounded-lg shadow-sm">
+                        <h5 class="text-lg font-bold text-[#2A62B6] mb-2">인터뷰 인물: 이서영</h5>
+                        <p class="text-gray-700 mb-3">
+                            이서영은 AI 이미지 생성 기술이 가져올 산업적 변화에 관심을 보였다. 양산형 콘텐츠가 필요한 분야(소셜미디어용 이미지, 광고 디자인)에서는 AI가 유용할 수 있다고 인정하였다. 그러나 예술이나 창작의 영역에서는 AI가 인간만큼 감정을 담을 수 없다고 보았다. AI의 작업은 주어진 명령어와 데이터에 기반하므로 삶의 이야기나 맥락이 담기기 어렵다고 언급하였다. 그녀는 AI 이미지에는 예술가의 진정성이나 개성이 빠져 있다고 말하며, 감각적인 선택이나 직관적인 판단은 인간 디자이너의 몫이라고 생각하였다. AI와 인간이 함께 작업할 수는 있겠지만, '창작자'의 자리를 AI가 대신하긴 어렵다는 입장을 가졌다. AI는 도구이지 창작의 주체가 될 수 없다고 강조하였다. 요약하자면, 이서영은 AI의 실용성은 인정하지만 창작의 깊이와 감정은 인간만이 표현할 수 있다고 믿었다.
+                        </p>
+                        <img src="src/KakaoTalk_20250605_160529121.jpg" alt="이서영" width="400px" class="interview">
+                        <a href="https://clovanote.naver.com/s/bL2XdDWMYfnrXczyhnBG7gS?t=3" target="_blank" class="text-[#4ECDC4] hover:underline text-sm">인터뷰 촬영 링크</a>
+                    </div>
+
+                    <div class="interview-card p-5 rounded-lg shadow-sm">
+                        <h5 class="text-lg font-bold text-[#2A62B6] mb-2">인터뷰 인물: 이담현</h5>
+                        
+                        <p class="text-gray-700 mb-3">
+                            이담현은 AI 이미지 생성 기술이 빠르고 실용적이라는 점에서 긍정적인 평가를 하였다. 특히 기업 마케팅 분야에서 AI를 활용하면 시간과 비용을 아낄 수 있어 유용하다고 보았다. 하지만 디자이너의 노력과 고유한 감성을 간과하는 점은 우려스럽다고 말하였다. AI가 만든 이미지가 아무리 잘 만들어져도 사람의 창의성과 정성을 담은 작업과는 본질적으로 다르다고 생각하였다. 그는 AI가 디자이너의 자리를 대체하는 것이 아니라 보조 도구로 사용되었으면 한다고 강조하였다. 또한 AI에 대한 과도한 환상은 경계할 필요가 있다고 보았다. 실제로는 AI의 결과물이 만족스럽지 않은 경우도 많고, 사람이 손질해야 할 부분도 많기 때문이라고 지적하였다. 작업 속도는 빠르지만, 그만큼 품질이나 의도 전달 면에서는 부족할 수 있다고 언급하였다. 그는 디자이너의 고민과 맥락이 없는 AI 작업물은 결국 '겉모습만 좋은 이미지'일 수 있다고 말하였다. 요약하자면, 이담현은 AI의 효율성은 인정하지만 디자이너의 감성과 독창성을 결코 대체할 수 없다고 보았다.
+                        </p>
+                        <img src="src/KakaoTalk_20250605_155946745.png" alt="이담현" width="400px" class="interview">
+                        <a href="https://clovanote.naver.com/w/GLkGfFUBNeLycaB4MHNw/note-detail/5d3ffbee-a288-4791-b841-1cea33ce87n" target="_blank" class="text-[#4ECDC4] hover:underline text-sm">인터뷰 촬영 링크</a>
+                        
+                    </div>
+                    <h4 class="text-xl font-semibold text-[#263238] mb-4">다. 워드클라우드</h4> <br>
+                    <div class=word1111>
+                    <img src="src/KakaoTalk_20250605_155308011.png" alt="워드클라우드" class="wordcloud">
+                    </div>
+                </div>
+
+                <div class="card p-5 rounded-lg shadow-sm bg-[#E0F2FE]">
+                    <h5 class="text-lg font-bold text-[#2A62B6] mb-2">인터뷰 주요 키워드</h5>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-[#2A62B6] text-white text-sm px-3 py-1 rounded-full">양산형 콘텐츠</span>
+                        <span class="bg-[#4ECDC4] text-white text-sm px-3 py-1 rounded-full">창의성/예술성</span>
+                        <span class="bg-[#2A62B6] text-white text-sm px-3 py-1 rounded-full">AI의 한계</span>
+                        <span class="bg-[#4ECDC4] text-white text-sm px-3 py-1 rounded-full">이미지 생성</span>
+                        <span class="bg-[#2A62B6] text-white text-sm px-3 py-1 rounded-full">디자이너 영향</span>
+                        <span class="bg-[#4ECDC4] text-white text-sm px-3 py-1 rounded-full">속도/효율성</span>
+                        <span class="bg-[#2A62B6] text-white text-sm px-3 py-1 rounded-full">독창성 부족</span>
+                    </div>
+                    </div>
+            </section>
+
+            <section class="card p-6 md:p-8 mb-8">
+                <h3 class="text-2xl md:text-3xl font-bold text-[#2A62B6] mb-4">4. 결론 및 제언</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">가. 결론</h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-2">
+                            <li>대부분의 학생이 생성형 AI를 일상적으로 활용하며, 기술의 빠른 속도와 효율성에 긍정적인 반응을 보였다.</li>
+                            <li>AI의 창의성 부족과 감정 표현의 한계에 대해서는 분명한 우려가 존재했다.</li>
+                            <li>예술, 디자인처럼 인간의 감정이 중요한 분야에서는 AI 활용에 부정적인 시선이 많았고, 반복적이거나 상업적인 분야에서는 기술이 잘 활용되면 도움이 된다는 인식이 있었다.</li>
+                            <li>전체적으로 학생들은 AI를 지나치게 낙관하지도, 비판하지도 않으며, 균형 잡힌 태도와 현실적인 관점을 가지고 있음을 확인하였다.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold text-[#263238] mb-2">나. 제언</h4>
+                        <ul class="list-disc list-inside text-gray-700 space-y-2">
+                            <li>AI가 아무리 발전해도 사람이 해야 할 역할은 분명히 있으며, 앞으로는 사람과 AI가 각자 잘하는 것을 나눠서 함께 활용하는 방향이 중요할 것이다.</li>
+                            <li>기술을 제대로 이해하고 현명하게 사용하려면 단순한 사용법을 넘어, 기술에 대해 질문하고 고민할 수 있는 기회가 더 많아져야 한다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card p-6 md:p-8 mb-8">
+                <h3 class="text-2xl md:text-3xl font-bold text-[#2A62B6] mb-4">AI와 대화하기 ✨</h3>
+                <p class="text-gray-700 mb-4">
+                    생성형 AI 기술이나 상품화에 대해 궁금한 점이 있다면 AI에게 직접 질문해 보세요.
+                    보고서 내용과 관련된 질문이나 추가적인 아이디어 요청도 가능합니다.
+                </p>
+                <div class="flex flex-col space-y-4">
+                    <textarea
+                        id="aiQuestionInput"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2A62B6]"
+                        rows="4"
+                        placeholder="예: 생성형 AI가 미래 교육에 미칠 영향은 무엇인가요? 또는 이 보고서의 핵심 내용을 3문장으로 요약해 주세요."
+                    ></textarea>
+                    <button
+                        id="askAIButton"
+                        class="ai-chat-button self-end"
+                    >
+                        AI에게 질문하기 ✨
+                    </button>
+                    <div
+                        id="aiResponseContainer"
+                        class="p-4 bg-[#F4F7F9] rounded-md border border-gray-200 min-h-[100px] flex items-center justify-center text-gray-600 text-center"
+                    >
+                        <span id="aiResponseText">AI의 답변이 여기에 표시됩니다.</span>
+                        <div id="aiLoadingIndicator" class="hidden">
+                            <svg class="animate-spin h-8 w-8 text-[#2A62B6]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="ml-2">생성 중...</span>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
 
-        <footer class="text-center py-6 text-accent-grey text-sm">
+        <footer class="text-center text-gray-500 text-sm mt-12 pt-8 border-t border-gray-200">
             <p>&copy; 2025 미림마이스터고등학교 1학년 2반 1조 공동 조사 보고서</p>
         </footer>
     </div>
 
+    <!--
+      이 스크립트 블록에는 Chart.js를 사용하여 설문조사 결과를 시각화하는 JavaScript 코드와
+      Gemini API를 사용하여 AI와 대화하는 기능이 포함되어 있다.
+      각 차트는 반응형으로 설정되어 있으며, 한국어 레이블 줄 바꿈과 맞춤형 툴팁 기능을 제공한다.
+      AI 대화 기능은 사용자의 질문에 대해 Gemini 2.0 Flash 모델을 호출하여 답변을 생성한다.
+    -->
     <script>
-        // TypeScript converted to JavaScript
-        document.addEventListener('DOMContentLoaded', () => {
-            // Function to wrap labels for Chart.js
-            const wrapLabels = (label, maxLen = 16) => {
-                if (typeof label !== 'string') return label;
-                const words = label.split(' ');
-                let lines = [];
-                let currentLine = '';
+        // Function to wrap long labels for Chart.js
+        function wrapLabel(label, maxCharsPerLine) {
+            if (typeof label !== 'string') {
+                return label;
+            }
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
 
-                words.forEach(word => {
-                    if ((currentLine + word).length > maxLen && currentLine !== '') {
-                        lines.push(currentLine.trim());
-                        currentLine = word + ' ';
-                    } else {
-                        currentLine += word + ' ';
-                    }
-                });
-                lines.push(currentLine.trim());
-                return lines;
-            };
-
-            // Custom tooltip configuration
-            const customTooltip = {
-                callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.parsed.y !== null) {
-                            label += context.parsed.y + '명 (' + context.raw + '%)';
-                        }
-                        return label;
-                    }
-                }
-            };
-
-            // Data for Survey Question 1
-            const data1 = {
-                labels: ['전혀 그렇지 않다', '그렇지 않다', '보통이다', '그렇다', '매우 그렇다'].map(label => wrapLabels(label)),
-                datasets: [{
-                    label: '응답률',
-                    data: [0, 0, 11.4, 5.9, 82.4],
-                    backgroundColor: [
-                        '#A9A9A9', // Accent Grey for neutral/negative
-                        '#A9A9A9',
-                        '#E0F2FE', // Supporting Light Blue for neutral
-                        '#4ECDC4', // Secondary Teal for positive
-                        '#2A62B6'  // Primary Blue for very positive
-                    ],
-                    borderColor: [
-                        '#A9A9A9',
-                        '#A9A9A9',
-                        '#E0F2FE',
-                        '#4ECDC4',
-                        '#2A62B6'
-                    ],
-                    borderWidth: 1,
-                    barPercentage: 0.8, // Adjust bar width
-                    categoryPercentage: 0.8 // Adjust space between categories
-                }]
-            };
-
-            // Chart for Survey Question 1
-            const ctx1 = document.getElementById('chart1').getContext('2d');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: data1,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '생성형 AI 사용 경험',
-                            font: {
-                                size: 18,
-                                weight: 'bold'
-                            },
-                            color: 'var(--dark-text)'
-                        },
-                        legend: {
-                            display: false
-                        },
-                        tooltip: customTooltip
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '응답 비율 (%)',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                },
-                                color: 'var(--dark-text)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: '응답',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                color: 'var(--dark-text)'
-                            }
-                        }
-                    }
+            words.forEach(word => {
+                if ((currentLine + word).length > maxCharsPerLine && currentLine !== '') {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
                 }
             });
+            lines.push(currentLine.trim());
+            return lines;
+        }
 
-            // Data for Survey Question 2
-            const data2 = {
-                labels: ['전혀 관심 없다', '관심 없다', '보통이다', '관심 있다', '매우 관심 있다'].map(label => wrapLabels(label)),
+        // Custom tooltip callback for Chart.js
+        const customTooltip = {
+            callbacks: {
+                label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed !== null) {
+                        label += context.parsed + '%';
+                    }
+                    return label;
+                }
+            }
+        };
+
+        // Chart 1: 생성형 AI 사용 경험
+        const ctxAIUsage = document.getElementById('chartAIUsage').getContext('2d');
+        new Chart(ctxAIUsage, {
+            type: 'pie',
+            data: {
+                labels: ['전혀 그렇지 않다.', '그렇지 않다.', '보통이다.', '그렇다.', '매우 그렇다.'],
                 datasets: [{
-                    label: '응답률',
+                    data: [0, 0, 11.4, 5.9, 82.4],
+                    backgroundColor: [
+                        '#A9A9A9', /* Accent Grey */
+                        '#A9A9A9',
+                        '#E0F2FE', /* Supporting Light Blue */
+                        '#4ECDC4', /* Secondary Teal */
+                        '#2A62B6'  /* Primary Blue */
+                    ],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 14
+                            },
+                            color: '#263238',
+                            boxWidth: 20,
+                            padding: 15,
+                            usePointStyle: true,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map(function(label, i) {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const style = meta.controller.get
+                                            ? meta.controller.get(i).options.backgroundColor
+                                            : data.datasets[0].backgroundColor[i];
+                                        return {
+                                            text: wrapLabel(label, 16), // Wrap label
+                                            fillStyle: style,
+                                            strokeStyle: '#FFFFFF',
+                                            lineWidth: 2,
+                                            hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: customTooltip
+                }
+            }
+        });
+
+        // Chart 2: 생성형 AI 상품화 관심도
+        const ctxAIProductInterest = document.getElementById('chartAIProductInterest').getContext('2d');
+        new Chart(ctxAIProductInterest, {
+            type: 'bar',
+            data: {
+                labels: ['전혀 관심 없다.', '관심 없다.', '보통이다.', '관심 있다.', '매우 관심 있다.'],
+                datasets: [{
+                    label: '응답률 (%)',
                     data: [5.9, 23.5, 29.4, 29.4, 11.8],
                     backgroundColor: [
                         '#A9A9A9',
-                        '#A9A9A9',
                         '#E0F2FE',
                         '#4ECDC4',
+                        '#2A62B6',
                         '#2A62B6'
                     ],
-                    borderColor: [
-                        '#A9A9A9',
-                        '#A9A9A9',
-                        '#E0F2FE',
-                        '#4ECDC4',
-                        '#2A62B6'
-                    ],
-                    borderWidth: 1,
-                    barPercentage: 0.8,
-                    categoryPercentage: 0.8
+                    borderColor: '#FFFFFF',
+                    borderWidth: 1
                 }]
-            };
-
-            // Chart for Survey Question 2
-            const ctx2 = document.getElementById('chart2').getContext('2d');
-            new Chart(ctx2, {
-                type: 'bar',
-                data: data2,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
                         title: {
                             display: true,
-                            text: '생성형 AI 활용 상품화 관심도',
-                            font: {
-                                size: 18,
-                                weight: 'bold'
-                            },
-                            color: 'var(--dark-text)'
+                            text: '응답률 (%)',
+                            color: '#263238'
                         },
-                        legend: {
-                            display: false
-                        },
-                        tooltip: customTooltip
+                        ticks: {
+                            color: '#263238'
+                        }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '응답 비율 (%)',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                },
-                                color: 'var(--dark-text)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: '응답',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                color: 'var(--dark-text)'
+                    x: {
+                        ticks: {
+                            color: '#263238',
+                            callback: function(value, index, values) {
+                                return wrapLabel(this.getLabelForValue(value), 16); // Wrap label
                             }
                         }
                     }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Hide legend for bar chart
+                    },
+                    tooltip: customTooltip
                 }
-            });
+            }
+        });
 
-            // Data for Survey Question 3
-            const data3 = {
-                labels: ['전혀 영향을 미치지 않을 것이다', '영향을 미치지 않을 것이다', '보통이다', '영향을 미칠 것이다', '매우 큰 영향을 미칠 것이다'].map(label => wrapLabels(label)),
+        // Chart 3: 생성형 AI 기술의 미래 영향
+        const ctxAIImpact = document.getElementById('chartAIImpact').getContext('2d');
+        new Chart(ctxAIImpact, {
+            type: 'doughnut',
+            data: {
+                labels: ['전혀 영향을 미치지 않을 것이다.', '영향을 미치지 않을 것이다.', '보통이다.', '영향을 미칠 것이다.', '매우 큰 영향을 미칠 것이다.'],
                 datasets: [{
-                    label: '응답률',
                     data: [0, 5.9, 0, 52.9, 41.2],
                     backgroundColor: [
                         '#A9A9A9',
-                        '#A9A9A9',
                         '#E0F2FE',
+                        '#A9A9A9',
                         '#4ECDC4',
                         '#2A62B6'
                     ],
-                    borderColor: [
-                        '#A9A9A9',
-                        '#A9A9A9',
-                        '#E0F2FE',
-                        '#4ECDC4',
-                        '#2A62B6'
-                    ],
-                    borderWidth: 1,
-                    barPercentage: 0.8,
-                    categoryPercentage: 0.8
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 }]
-            };
-
-            // Chart for Survey Question 3
-            const ctx3 = document.getElementById('chart3').getContext('2d');
-            new Chart(ctx3, {
-                type: 'bar',
-                data: data3,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '미래 상품 개발 및 상품화에 미칠 영향',
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
                             font: {
-                                size: 18,
-                                weight: 'bold'
+                                size: 14
                             },
-                            color: 'var(--dark-text)'
-                        },
-                        legend: {
-                            display: false
-                        },
-                        tooltip: customTooltip
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '응답 비율 (%)',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                },
-                                color: 'var(--dark-text)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: '응답',
-                                color: 'var(--dark-text)'
-                            },
-                            ticks: {
-                                color: 'var(--dark-text)'
+                            color: '#263238',
+                            boxWidth: 20,
+                            padding: 15,
+                            usePointStyle: true,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map(function(label, i) {
+                                        const meta = chart.getDatasetMeta(0);
+                                        const style = meta.controller.get
+                                            ? meta.controller.get(i).options.backgroundColor
+                                            : data.datasets[0].backgroundColor[i];
+                                        return {
+                                            text: wrapLabel(label, 16), // Wrap label
+                                            fillStyle: style,
+                                            strokeStyle: '#FFFFFF',
+                                            lineWidth: 2,
+                                            hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
                             }
                         }
-                    }
+                    },
+                    tooltip: customTooltip
                 }
-            });
+            }
+        });
+
+        // Gemini API Integration
+        const askAIButton = document.getElementById('askAIButton');
+        const aiQuestionInput = document.getElementById('aiQuestionInput');
+        const aiResponseText = document.getElementById('aiResponseText');
+        const aiLoadingIndicator = document.getElementById('aiLoadingIndicator');
+        const aiResponseContainer = document.getElementById('aiResponseContainer');
+
+        askAIButton.addEventListener('click', async () => {
+            const prompt = aiQuestionInput.value.trim();
+            if (!prompt) {
+                aiResponseText.textContent = '질문을 입력해주세요.';
+                aiResponseContainer.classList.remove('bg-[#F4F7F9]', 'text-gray-600');
+                aiResponseContainer.classList.add('bg-red-100', 'text-red-700');
+                return;
+            }
+
+            // Reset styling and show loading
+            aiResponseContainer.classList.remove('bg-red-100', 'text-red-700');
+            aiResponseContainer.classList.add('bg-[#F4F7F9]', 'text-gray-600');
+            aiResponseText.classList.add('hidden');
+            aiLoadingIndicator.classList.remove('hidden');
+            askAIButton.disabled = true;
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    aiResponseText.textContent = text;
+                } else {
+                    aiResponseText.textContent = '답변을 생성하는 데 실패했습니다. 다시 시도해 주세요.';
+                    aiResponseContainer.classList.remove('bg-[#F4F7F9]', 'text-gray-600');
+                    aiResponseContainer.classList.add('bg-red-100', 'text-red-700');
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                aiResponseText.textContent = '네트워크 오류 또는 API 호출 중 문제가 발생했습니다. 콘솔을 확인하세요.';
+                aiResponseContainer.classList.remove('bg-[#F4F7F9]', 'text-gray-600');
+                aiResponseContainer.classList.add('bg-red-100', 'text-red-700');
+            } finally {
+                aiLoadingIndicator.classList.add('hidden');
+                aiResponseText.classList.remove('hidden');
+                askAIButton.disabled = false;
+            }
         });
     </script>
-    </body>
+</body>
 </html>
-
